@@ -38,6 +38,7 @@
         self.titleLabel.bounds = CGRectMake(0.0, 0.0, 25.0, self.bounds.size.height / 2.0 - 10.0);
         self.titleLabel.fontSize = 14.0f;
         self.titleLabel.position = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
+        self.titleLabel.string = [NSString stringWithFormat:@"%d", index1];
         [self.layer addSublayer:self.titleLabel];
         
         UILongPressGestureRecognizer *lpgr = [[UILongPressGestureRecognizer alloc]
@@ -46,7 +47,6 @@
         [self addGestureRecognizer:lpgr];
         
         self.index = index1;
-        
     }
     return self;
 }
@@ -60,7 +60,6 @@
     index = index1;
     self.indexOfPositionInRow = self.index % NUMBER_OF_MENU_ITEMS_PER_ROW;
     self.indexOfRow = round(self.index /NUMBER_OF_MENU_ITEMS_PER_ROW);
-    self.titleLabel.string = [NSString stringWithFormat:@"%d", index];
 
     [self recalculateFrame];
 }
@@ -90,7 +89,7 @@
     CGAffineTransform leftWobble = CGAffineTransformMakeRotation(degreesToRadians( (kAnimationRotateDeg * -1.0) - r ));
     CGAffineTransform rightWobble = CGAffineTransformMakeRotation(degreesToRadians( kAnimationRotateDeg + r ));
     
-    self.transform = leftWobble;  // starting point
+    self.transform = leftWobble;
     
     [[self layer] setAnchorPoint:CGPointMake(0.5, 0.5)];
     
@@ -105,7 +104,7 @@
 
 - (void)stopJiggling {
     [self.layer removeAllAnimations];
-    self.transform = CGAffineTransformIdentity;  // Set it straight
+    self.transform = CGAffineTransformIdentity;
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -117,11 +116,9 @@
 		self.center = location;
         
         [NSObject cancelPreviousPerformRequestsWithTarget:self];
-        
         [self performSelector:@selector(fireLocationChangedDelegate:)
                    withObject:touch
                    afterDelay:.5];
-        
 		return;
 	}
 }

@@ -77,16 +77,33 @@
 }
 
 - (void)gridMenuItem:(GridMenuItem *)movedMenuItem movedToLocation:(CGPoint)location
-{
-    NSLog(@"grid menu item moved to  location %@", NSStringFromCGPoint(location));
+{    
+    int newIndex = movedMenuItem.index;
     
     for (UIView *subView in [self.scrollView subviews]) {
         if ([subView isKindOfClass:[GridMenuItem class]]) {
             GridMenuItem *menuItem = ((GridMenuItem*)subView);
             if (menuItem != movedMenuItem) {
-                menuItem.index = menuItem.index + 1;
+                
+                if (CGRectIntersectsRect(movedMenuItem.frame, menuItem.frame)) {
+                    newIndex = menuItem.index;
+                    break;
+                }
             }
         }
     }
+    
+    for (UIView *subView in [self.scrollView subviews]) {
+        if ([subView isKindOfClass:[GridMenuItem class]]) {
+            GridMenuItem *menuItem = ((GridMenuItem*)subView);
+            if ((movedMenuItem.index < newIndex) && (menuItem.index > movedMenuItem.index) && (menuItem.index <= newIndex)){
+                menuItem.index--;
+            }
+            else if ((movedMenuItem.index > newIndex) && (menuItem.index < movedMenuItem.index) && (menuItem.index >= newIndex)){
+                menuItem.index++;
+            }
+        }
+    }
+    movedMenuItem.index = newIndex;
 }
 @end
