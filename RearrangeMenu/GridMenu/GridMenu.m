@@ -76,14 +76,16 @@
     self.isEditingModeOn = YES;
 }
 
-- (void)gridMenuItem:(GridMenuItem *)menuItem movedToLocation:(CGPoint)location
+- (void)gridMenuItem:(GridMenuItem *)movedMenuItem movedToLocation:(CGPoint)location
 {
-    NSLog(@"grid menu item moved to location %@", NSStringFromCGPoint(location));
+    NSLog(@"grid menu item moved to  location %@", NSStringFromCGPoint(location));
     
     for (UIView *subView in [self.scrollView subviews]) {
         if ([subView isKindOfClass:[GridMenuItem class]]) {
             GridMenuItem *menuItem = ((GridMenuItem*)subView);
-            
+            if (menuItem != movedMenuItem) {
+                menuItem.index = menuItem.index + 1;
+            }
         }
     }
 }

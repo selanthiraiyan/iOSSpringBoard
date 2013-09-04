@@ -67,13 +67,18 @@
 
 - (void)recalculateFrame {
     
-    CGFloat remainingX = self.superview.bounds.size.width - (WIDTH * NUMBER_OF_MENU_ITEMS_PER_ROW);
+    CGFloat remainingX = 320 - (WIDTH * NUMBER_OF_MENU_ITEMS_PER_ROW);
     int numberOfGaps = NUMBER_OF_MENU_ITEMS_PER_ROW + 1;
     CGFloat paddingX = remainingX/numberOfGaps;
     CGFloat paddingY = 15;
     
     CGRect frame = CGRectMake(WIDTH * self.indexOfPositionInRow + paddingX * (self.indexOfPositionInRow + 1), HEIGHT * self.indexOfRow + paddingY * (self.indexOfRow + 1), WIDTH, HEIGHT);
-    self.frame = frame;
+    
+    [UIView
+     animateWithDuration:0.5
+     animations:^{
+         self.frame = frame;
+     }];
 }
 
 - (void)startJiggling {
@@ -110,9 +115,20 @@
 	if ([touch view] == self && self.canBeMovedOnTouch) {
 		CGPoint location = [touch locationInView:self.superview];
 		self.center = location;
-        [self.delegate gridMenuItem:self movedToLocation:location];
+        
+        [NSObject cancelPreviousPerformRequestsWithTarget:self];
+        
+        [self performSelector:@selector(fireLocationChangedDelegate:)
+                   withObject:touch
+                   afterDelay:.5];
+        
 		return;
 	}
 }
 
+- (void)fireLocationChangedDelegate:(UITouch*)touch {
+    CGPoint location = [touch locationInView:self.superview];
+    [self.delegate gridMenuItem:self movedToLocation:location];
+
+}
 @end
