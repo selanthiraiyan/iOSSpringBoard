@@ -23,28 +23,27 @@
 @end
 
 @implementation GridMenuItem
-@synthesize index, indexOfPositionInRow, indexOfRow;
+@synthesize index, indexOfPositionInRow, indexOfRow, title;
 
 - (id)initWithIndex:(int)index1
 {
     self = [super initWithFrame:CGRectMake(0, 0, WIDTH, HEIGHT)];
     if (self) {
         
-        self.backgroundColor = [UIColor grayColor];
-        [self.layer setCornerRadius:10.0f];
-        
         self.titleLabel = [CATextLayer layer];
         self.titleLabel.alignmentMode = @"center";
         self.titleLabel.bounds = CGRectMake(0.0, 0.0, 25.0, self.bounds.size.height / 2.0 - 10.0);
-        self.titleLabel.fontSize = 14.0f;
+        self.titleLabel.fontSize = 11.0f;
         self.titleLabel.position = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
-        self.titleLabel.string = [NSString stringWithFormat:@"%d", index1];
         [self.layer addSublayer:self.titleLabel];
         
-        UILongPressGestureRecognizer *lpgr = [[UILongPressGestureRecognizer alloc]
+        UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
                                               initWithTarget:self action:@selector(handleLongPress)];
-        lpgr.minimumPressDuration = 1.0;
-        [self addGestureRecognizer:lpgr];
+        longPress.minimumPressDuration = 1.0;
+        [self addGestureRecognizer:longPress];
+        
+        UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(handleTap)];
+        [self addGestureRecognizer:tap];
         
         self.index = index1;
     }
@@ -56,12 +55,26 @@
     [self.delegate longPressedGridMenuItem:self];
 }
 
+- (void)handleTap
+{
+    if (self.canBeMovedOnTouch == NO) {
+        [self.delegate gridMenuItemSelected:self];
+    }
+}
+
+- (void)setTitle:(NSString *)title1
+{
+    title = title1;
+    self.titleLabel.string = title;
+}
+
 - (void)setIndex:(int)index1 {
     index = index1;
     self.indexOfPositionInRow = self.index % NUMBER_OF_MENU_ITEMS_PER_ROW;
     self.indexOfRow = round(self.index /NUMBER_OF_MENU_ITEMS_PER_ROW);
 
     [self recalculateFrame];
+    [self.delegate gridMenuItemRepositioned:self];
 }
 
 - (void)recalculateFrame {
@@ -125,7 +138,7 @@
 
 - (void)fireLocationChangedDelegate:(UITouch*)touch {
     CGPoint location = [touch locationInView:self.superview];
-    [self.delegate gridMenuItem:self movedToLocation:location];
+    [self.delegate gridMenuItem:self draggedToLocation:location];
 
 }
 @end

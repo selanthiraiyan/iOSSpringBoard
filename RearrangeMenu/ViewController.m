@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import "GridMenuItem.h"
+#import <QuartzCore/QuartzCore.h>
 
 @interface ViewController ()
 
@@ -25,15 +26,18 @@
     self.gridMenu = [[GridMenu alloc]initWithFrame:self.view.bounds];
     self.gridMenu.delegate = self;
     self.gridMenu.datasource = self;
+    self.gridMenu.numberOfPages = 3;
     [self.view addSubview:self.gridMenu];
     
     self.menuItems = [[NSMutableArray alloc]init];
     for (int i = 0; i < 10; i++) {
         GridMenuItem *menuItem = [[GridMenuItem alloc]initWithIndex:i];
         menuItem.title = [NSString stringWithFormat:@"Item %d", i];
+        menuItem.backgroundColor = [UIColor grayColor];
+        [menuItem.layer setCornerRadius:10.0f];
         [self.menuItems addObject:menuItem];
     }
-    
+        
     [self.gridMenu reloadMenu];
 }
 
@@ -43,6 +47,7 @@
     // Dispose of any resources that can be recreated.
 }
 
+#pragma mark GridMenuDataSource methods
 - (int)numberOfMenuItems
 {
     return [self.menuItems count];
@@ -51,6 +56,17 @@
 - (GridMenuItem*)gridMenuItemAtIndex:(int)index
 {
     return [self.menuItems objectAtIndex:index];
+}
+
+#pragma mark GridMenuDelegate methods
+- (void)gridMenuItemRepositioned:(GridMenuItem*)item
+{
+    NSLog(@"Grid menu item repositioned %@", item);
+}
+
+- (void)gridMenuItemSelected:(GridMenuItem*)item
+{
+    NSLog(@"Grid menu item selected %@", item);
 }
 
 @end

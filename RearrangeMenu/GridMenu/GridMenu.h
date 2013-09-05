@@ -24,13 +24,15 @@
 
 @optional
 - (void)gridMenuItemSelected:(GridMenuItem*)item;
-
+- (void)gridMenuItemRepositioned:(GridMenuItem*)item;
 @end
 
 @interface GridMenu : UIView <GridMenuItemDelegate>
 
 @property (assign) id<GridMenuDataSource> datasource;
 @property (assign) id<GridMenuDelegate> delegate;
+@property(nonatomic) NSInteger numberOfPages;
+@property(nonatomic) NSInteger currentPage;
 
 - (void)reloadMenu;
 

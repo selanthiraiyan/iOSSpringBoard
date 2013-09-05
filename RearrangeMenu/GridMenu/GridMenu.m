@@ -76,7 +76,7 @@
     self.isEditingModeOn = YES;
 }
 
-- (void)gridMenuItem:(GridMenuItem *)movedMenuItem movedToLocation:(CGPoint)location
+- (void)gridMenuItem:(GridMenuItem *)movedMenuItem draggedToLocation:(CGPoint)location
 {    
     int newIndex = movedMenuItem.index;
     
@@ -105,5 +105,15 @@
         }
     }
     movedMenuItem.index = newIndex;
+}
+
+- (void)gridMenuItemRepositioned:(GridMenuItem *)item
+{
+    [self.delegate gridMenuItemRepositioned:item];
+}
+
+- (void)gridMenuItemSelected:(GridMenuItem*)item
+{
+    [self.delegate gridMenuItemSelected:item];
 }
 @end

@@ -13,5 +13,6 @@
 @property (retain) NSString *title;
 
 - (id)initWithIndex:(int)index;
+@property int pageNumber;
 
 @end
