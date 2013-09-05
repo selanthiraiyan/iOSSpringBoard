@@ -10,12 +10,14 @@
 #import "GridMenuItem_Private.h"
 #import <QuartzCore/QuartzCore.h>
 
-#define NUMBER_OF_MENU_ITEMS_PER_ROW 3
+#define GRID_MENU_WIDTH 320
 #define WIDTH 80
 #define HEIGHT 80
 
 @interface GridMenuItem ()
 
+@property (nonatomic, readwrite) int index;
+@property (nonatomic, readwrite) int pageNumber;
 @property (readwrite) int indexOfRow;
 @property (readwrite) int indexOfPositionInRow;
 @property (retain) CATextLayer *titleLabel;
@@ -23,9 +25,9 @@
 @end
 
 @implementation GridMenuItem
-@synthesize index, indexOfPositionInRow, indexOfRow, title;
+@synthesize indexOfPositionInRow, indexOfRow, title;
 
-- (id)initWithIndex:(int)index1
+- (id)init
 {
     self = [super initWithFrame:CGRectMake(0, 0, WIDTH, HEIGHT)];
     if (self) {
@@ -46,7 +48,6 @@
         [self addGestureRecognizer:tap];
         
         self.isBeingRepositioned = NO;
-        self.index = index1;
     }
     return self;
 }
@@ -66,13 +67,15 @@
 - (void)setTitle:(NSString *)title1
 {
     title = title1;
-    self.titleLabel.string = title;
+    self.titleLabel.string = self.title;
 }
 
-- (void)setIndex:(int)index1 {
-    index = index1;
-    self.indexOfPositionInRow = self.index % NUMBER_OF_MENU_ITEMS_PER_ROW;
-    self.indexOfRow = round(self.index /NUMBER_OF_MENU_ITEMS_PER_ROW);
+- (void)setIndex:(int)index1 pageNumber:(int)pageNumber1
+{
+    self.index = index1;
+    self.pageNumber = pageNumber1;
+    self.indexOfPositionInRow = self.index % [self.delegate numberOfMenuItemsPerRow];
+    self.indexOfRow = round(self.index /[self.delegate numberOfMenuItemsPerRow]);
     
     if (self.isBeingRepositioned == NO) {
         [self recalculateFrame];
@@ -80,14 +83,19 @@
     }
 }
 
+
 - (void)recalculateFrame {
     
-    CGFloat remainingX = 320 - (WIDTH * NUMBER_OF_MENU_ITEMS_PER_ROW);
-    int numberOfGaps = NUMBER_OF_MENU_ITEMS_PER_ROW + 1;
+    CGFloat remainingX = GRID_MENU_WIDTH - (WIDTH * [self.delegate numberOfMenuItemsPerRow]);
+    int numberOfGaps = [self.delegate numberOfMenuItemsPerRow] + 1;
     CGFloat paddingX = remainingX/numberOfGaps;
     CGFloat paddingY = 15;
     
-    CGRect frame = CGRectMake(WIDTH * self.indexOfPositionInRow + paddingX * (self.indexOfPositionInRow + 1), HEIGHT * self.indexOfRow + paddingY * (self.indexOfRow + 1), WIDTH, HEIGHT);
+    CGRect frame = CGRectMake(
+                              (self.pageNumber * GRID_MENU_WIDTH) + (WIDTH * self.indexOfPositionInRow) + (paddingX * (self.indexOfPositionInRow + 1)),
+                              (HEIGHT * self.indexOfRow) + (paddingY * (self.indexOfRow + 1)),
+                              WIDTH,
+                              HEIGHT);
     
     [UIView
      animateWithDuration:0.5
@@ -146,9 +154,9 @@
 	
 	if ([touch view] == self && self.canBeMovedOnTouch) {
         [NSObject cancelPreviousPerformRequestsWithTarget:self];
-
+        
         self.isBeingRepositioned = NO;
-        self.index = self.index;
+        [self setIndex:self.index pageNumber:self.pageNumber];
         return;
     }
 }
@@ -158,17 +166,16 @@
     
     if ([touch view] == self && self.canBeMovedOnTouch) {
         [NSObject cancelPreviousPerformRequestsWithTarget:self];
-
+        
         self.isBeingRepositioned = NO;
-        self.index = self.index;
+        [self setIndex:self.index pageNumber:self.pageNumber];
         return;
     }
 }
 
 - (void)fireLocationChangedDelegate:(UITouch*)touch {
     
-    CGPoint location = [touch locationInView:self.superview];
-    [self.delegate gridMenuItem:self draggedToLocation:location];
+    [self.delegate gridMenuItemDraggedToLocation:self];
     
 }
 @end

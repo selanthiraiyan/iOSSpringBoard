@@ -11,10 +11,11 @@
 @interface GridMenuItem ()
 
 @property (weak) id<GridMenuItemDelegate> delegate;
-@property (nonatomic, readwrite) int index;
+
 @property BOOL canBeMovedOnTouch;
 @property BOOL isBeingRepositioned;;
 - (void)startJiggling;
 - (void)stopJiggling;
+- (void)setIndex:(int)index pageNumber:(int)pageNumber;
 
 @end

@@ -11,8 +11,9 @@
 @protocol GridMenuItemDelegate <NSObject>
 
 - (void)longPressedGridMenuItem:(GridMenuItem*)menuItem;
-- (void)gridMenuItem:(GridMenuItem *)menuItem draggedToLocation:(CGPoint)location;
+- (void)gridMenuItemDraggedToLocation:(GridMenuItem *)menuItem;
 - (void)gridMenuItemRepositioned:(GridMenuItem*)item;
 - (void)gridMenuItemSelected:(GridMenuItem*)item;
+- (int)numberOfMenuItemsPerRow;
 
 @end

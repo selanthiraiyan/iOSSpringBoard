@@ -10,13 +10,15 @@
 #import "GridMenuItem.h"
 #import "GridMenuItemDelegate.h"
 
+@class GridMenu;
 
 @protocol GridMenuDataSource <NSObject>
 
 @required
-- (int)numberOfMenuItems;
-- (GridMenuItem*)gridMenuItemAtIndex:(int)index;
-
+- (int)numberOfMenuItemsAtPageNumber:(int)pageNumber inGridMenu:(GridMenu*)gridMenu;
+- (GridMenuItem*)gridMenuItemAtIndex:(int)index atPageNumber:(int)pageNumber inGridMenu:(GridMenu*)gridMenu;
+- (int)numberOfPagesInGridMenu:(GridMenu*)gridMenu;
+- (int)numberOfColumnsPerPageInGridMenu:(GridMenu*)gridMenu;
 @end
 
 
@@ -31,7 +33,6 @@
 
 @property (assign) id<GridMenuDataSource> datasource;
 @property (assign) id<GridMenuDelegate> delegate;
-@property (nonatomic) NSInteger numberOfPages;
 @property (nonatomic) NSInteger currentPage; //0 to numberOfPages - 1
 
 - (void)reloadMenu;

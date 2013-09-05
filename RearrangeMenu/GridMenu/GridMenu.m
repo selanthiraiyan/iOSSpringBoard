@@ -18,14 +18,13 @@
 @end
 
 @implementation GridMenu
-@synthesize isEditingModeOn, numberOfPages, currentPage;
+@synthesize isEditingModeOn, currentPage;
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
         [self createViews];
-        self.numberOfPages = 1;
         self.currentPage = 0;
     }
     return self;
@@ -53,10 +52,6 @@
 
 - (void)handleSwipe:(UISwipeGestureRecognizer*)swipe
 {
-    if (self.isEditingModeOn) {
-        return;
-    }
-    
     if (swipe.direction == UISwipeGestureRecognizerDirectionRight) {
         self.currentPage--;
     }
@@ -91,8 +86,8 @@
 
 - (void)setCurrentPage:(NSInteger)currentPage1
 {
-    if ((currentPage1 < 0) || (currentPage1 >= self.numberOfPages)) {
-//        [NSException raise:@"Invalid current page." format:[NSString stringWithFormat:@"Failed to set current page as %d", currentPage1]];
+    if ((currentPage1 < 0) || (currentPage1 >= [self.datasource numberOfPagesInGridMenu:self])) {
+        //        [NSException raise:@"Invalid current page." format:[NSString stringWithFormat:@"Failed to set current page as %d", currentPage1]];
         return;
     }
     currentPage = currentPage1;
@@ -100,18 +95,19 @@
     [self.scrollView setContentOffset:newOffset animated:YES];
 }
 
-- (void)setNumberOfPages:(NSInteger)numberOfPages1
-{
-    numberOfPages = numberOfPages1;
-    self.scrollView.contentSize = CGSizeMake(self.scrollView.bounds.size.width * numberOfPages, self.scrollView.bounds.size.height);
-}
-
 - (void)reloadMenu
 {
-    for (int i = 0; i < [self.datasource numberOfMenuItems]; i++) {
-        GridMenuItem *menuItem = [self.datasource gridMenuItemAtIndex:i];
-        menuItem.delegate = self;
-        [self.scrollView addSubview:menuItem];
+    self.scrollView.contentSize = CGSizeMake(self.scrollView.bounds.size.width * [self.datasource numberOfPagesInGridMenu:self], self.scrollView.bounds.size.height);
+    
+    for (int page = 0; page < [self.datasource numberOfPagesInGridMenu:self]; page++) {
+        
+        for (int i = 0; i < [self.datasource numberOfMenuItemsAtPageNumber:page inGridMenu:self]; i++) {
+            GridMenuItem *menuItem = [self.datasource gridMenuItemAtIndex:i atPageNumber:page inGridMenu:self];
+            menuItem.delegate = self;
+            [menuItem setIndex:i pageNumber:page];
+            [self.scrollView addSubview:menuItem];
+        }
+        
     }
 }
 #pragma mark GridMenuItemDelegate methods
@@ -120,8 +116,8 @@
     self.isEditingModeOn = YES;
 }
 
-- (void)gridMenuItem:(GridMenuItem *)movedMenuItem draggedToLocation:(CGPoint)location
-{    
+- (void)gridMenuItemDraggedToLocation:(GridMenuItem *)movedMenuItem
+{
     
     CGFloat minOffsetFromRightNeededToMoveToNextPage = 10.0f;
     CGFloat actualOffsetFromRight;
@@ -134,26 +130,9 @@
         actualOffsetFromRight = fmodf(xPositionOfMovedItem, self.scrollView.bounds.size.width);
     }
     
-//    NSLog(@"minOff %f actualOff %f", minOffsetFromRightNeededToMoveToNextPage, actualOffsetFromRight);
+    NSLog(@"minOff %f actualOff %f", minOffsetFromRightNeededToMoveToNextPage, actualOffsetFromRight);
     
-    int newIndex = [self getNewIndexForDraggedMenuItem:movedMenuItem];
-
-    if (newIndex == -1) { //-1 means that there are no menu items intersecting the menu item that is being dragged
-        return;
-    }
-    
-    for (UIView *subView in [self.scrollView subviews]) {
-        if ([subView isKindOfClass:[GridMenuItem class]]) {
-            GridMenuItem *menuItem = ((GridMenuItem*)subView);
-            if ((movedMenuItem.index < newIndex) && (menuItem.index > movedMenuItem.index) && (menuItem.index <= newIndex)){
-                menuItem.index--;
-            }
-            else if ((movedMenuItem.index > newIndex) && (menuItem.index < movedMenuItem.index) && (menuItem.index >= newIndex)){
-                menuItem.index++;
-            }
-        }
-    }
-    movedMenuItem.index = newIndex;
+    [self repositionMenuItemInPageNumber:movedMenuItem.pageNumber menuItem:movedMenuItem];
 }
 
 - (void)gridMenuItemRepositioned:(GridMenuItem *)item
@@ -166,13 +145,52 @@
     [self.delegate gridMenuItemSelected:item];
 }
 
+- (int)numberOfMenuItemsPerRow
+{
+    return [self.datasource numberOfColumnsPerPageInGridMenu:self];
+}
+
 #pragma mark Helper methods
+
+- (void)repositionMenuItemInPageNumber:(int)pageNumber menuItem:(GridMenuItem*)movedMenuItem
+{
+    int newIndex = [self getNewIndexForDraggedMenuItem:movedMenuItem];
+    
+    if (newIndex == -1) { //-1 means that there are no menu items intersecting the menu item that is being dragged
+        return;
+    }
+    
+    for (UIView *subView in [self.scrollView subviews]) {
+        if ([subView isKindOfClass:[GridMenuItem class]]) {
+            GridMenuItem *menuItem = ((GridMenuItem*)subView);
+            
+            if (movedMenuItem.pageNumber != menuItem.pageNumber) {
+                continue;
+            }
+            
+            if ((movedMenuItem.index < newIndex) && (menuItem.index > movedMenuItem.index) && (menuItem.index <= newIndex)){
+                [menuItem setIndex:menuItem.index-1 pageNumber:menuItem.pageNumber];
+            }
+            else if ((movedMenuItem.index > newIndex) && (menuItem.index < movedMenuItem.index) && (menuItem.index >= newIndex)){
+                [menuItem setIndex:menuItem.index+1 pageNumber:menuItem.pageNumber];
+            }
+        }
+    }
+    
+    [movedMenuItem setIndex:newIndex pageNumber:movedMenuItem.pageNumber];
+}
+
 - (int)getNewIndexForDraggedMenuItem:(GridMenuItem*)movedMenuItem
 {
     int newIndex = -1;
     for (UIView *subView in [self.scrollView subviews]) {
         if ([subView isKindOfClass:[GridMenuItem class]]) {
             GridMenuItem *menuItem = ((GridMenuItem*)subView);
+
+            if (movedMenuItem.pageNumber != menuItem.pageNumber) {
+                continue;
+            }
+            
             if (menuItem != movedMenuItem) {
                 
                 if (CGRectIntersectsRect(movedMenuItem.frame, menuItem.frame)) {

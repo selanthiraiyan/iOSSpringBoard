@@ -11,8 +11,7 @@
 @interface GridMenuItem : UIView 
 
 @property (retain) NSString *title;
-
-- (id)initWithIndex:(int)index;
-@property int pageNumber;
+@property (nonatomic, readonly) int index;
+@property (nonatomic, readonly) int pageNumber;
 
 @end
