@@ -61,12 +61,12 @@
 #pragma mark GridMenuDelegate methods
 - (void)gridMenuItemRepositioned:(GridMenuItem*)item
 {
-    NSLog(@"Grid menu item repositioned %@", item);
+//    NSLog(@"Grid menu item repositioned %@", item);
 }
 
 - (void)gridMenuItemSelected:(GridMenuItem*)item
 {
-    NSLog(@"Grid menu item selected %@", item);
+//    NSLog(@"Grid menu item selected %@", item);
 }
 
 @end

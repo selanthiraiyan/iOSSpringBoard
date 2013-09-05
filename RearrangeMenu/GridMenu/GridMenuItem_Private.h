@@ -13,6 +13,7 @@
 @property (weak) id<GridMenuItemDelegate> delegate;
 @property (nonatomic, readwrite) int index;
 @property BOOL canBeMovedOnTouch;
+@property BOOL isBeingRepositioned;;
 - (void)startJiggling;
 - (void)stopJiggling;
 

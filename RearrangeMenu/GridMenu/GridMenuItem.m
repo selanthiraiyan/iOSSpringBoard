@@ -32,19 +32,20 @@
         
         self.titleLabel = [CATextLayer layer];
         self.titleLabel.alignmentMode = @"center";
-        self.titleLabel.bounds = CGRectMake(0.0, 0.0, 25.0, self.bounds.size.height / 2.0 - 10.0);
+        self.titleLabel.bounds = CGRectMake(0.0, 0.0, self.bounds.size.width, self.bounds.size.height / 2.0 - 10.0);
         self.titleLabel.fontSize = 11.0f;
         self.titleLabel.position = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
         [self.layer addSublayer:self.titleLabel];
         
         UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
-                                              initWithTarget:self action:@selector(handleLongPress)];
+                                                   initWithTarget:self action:@selector(handleLongPress)];
         longPress.minimumPressDuration = 1.0;
         [self addGestureRecognizer:longPress];
         
         UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(handleTap)];
         [self addGestureRecognizer:tap];
         
+        self.isBeingRepositioned = NO;
         self.index = index1;
     }
     return self;
@@ -72,9 +73,11 @@
     index = index1;
     self.indexOfPositionInRow = self.index % NUMBER_OF_MENU_ITEMS_PER_ROW;
     self.indexOfRow = round(self.index /NUMBER_OF_MENU_ITEMS_PER_ROW);
-
-    [self recalculateFrame];
-    [self.delegate gridMenuItemRepositioned:self];
+    
+    if (self.isBeingRepositioned == NO) {
+        [self recalculateFrame];
+        [self.delegate gridMenuItemRepositioned:self];
+    }
 }
 
 - (void)recalculateFrame {
@@ -125,6 +128,8 @@
 	UITouch *touch = [touches anyObject];
 	
 	if ([touch view] == self && self.canBeMovedOnTouch) {
+        self.isBeingRepositioned = YES;
+        
 		CGPoint location = [touch locationInView:self.superview];
 		self.center = location;
         
@@ -136,9 +141,34 @@
 	}
 }
 
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+    UITouch *touch = [touches anyObject];
+	
+	if ([touch view] == self && self.canBeMovedOnTouch) {
+        [NSObject cancelPreviousPerformRequestsWithTarget:self];
+
+        self.isBeingRepositioned = NO;
+        self.index = self.index;
+        return;
+    }
+}
+
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
+    UITouch *touch = [touches anyObject];
+    
+    if ([touch view] == self && self.canBeMovedOnTouch) {
+        [NSObject cancelPreviousPerformRequestsWithTarget:self];
+
+        self.isBeingRepositioned = NO;
+        self.index = self.index;
+        return;
+    }
+}
+
 - (void)fireLocationChangedDelegate:(UITouch*)touch {
+    
     CGPoint location = [touch locationInView:self.superview];
     [self.delegate gridMenuItem:self draggedToLocation:location];
-
+    
 }
 @end

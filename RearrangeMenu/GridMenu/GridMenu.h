@@ -27,12 +27,12 @@
 - (void)gridMenuItemRepositioned:(GridMenuItem*)item;
 @end
 
-@interface GridMenu : UIView <GridMenuItemDelegate>
+@interface GridMenu : UIView <GridMenuItemDelegate, UIScrollViewDelegate>
 
 @property (assign) id<GridMenuDataSource> datasource;
 @property (assign) id<GridMenuDelegate> delegate;
-@property(nonatomic) NSInteger numberOfPages;
-@property(nonatomic) NSInteger currentPage;
+@property (nonatomic) NSInteger numberOfPages;
+@property (nonatomic) NSInteger currentPage; //0 to numberOfPages - 1
 
 - (void)reloadMenu;
 
